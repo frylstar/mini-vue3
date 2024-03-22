@@ -69,6 +69,10 @@ export function track(target, key) {
         depsMap.set(key, dep)
     }
 
+    trackEffects(dep)
+}
+
+export function trackEffects(dep) {
     // 这里需要拿到fn，那么我们应该如何拿到fn呢？
     // 可以利用一个全局变量去获取
     if (dep.has(activeEffect)) return
@@ -77,7 +81,7 @@ export function track(target, key) {
     activeEffect.deps.push(dep)
 }
 
-function isTracking() {
+export function isTracking() {
     return shouldTrack && activeEffect !== undefined
 }
 
@@ -87,6 +91,10 @@ export function trigger(target, key) {
 
     let dep = depsMap.get(key)
 
+    triggerEffects(dep)
+}
+
+export function triggerEffects(dep) {
     for (const effect of dep) {
         if (effect.scheduler) {
             effect.scheduler()
