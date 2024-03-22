@@ -1,22 +1,27 @@
 import { track, trigger } from './effect'
 import { ReactiveFlags, reactive, readonly } from './reactive'
-import { isObject } from '../shared'
+import { extend, isObject } from '../shared'
 
 // 优化点：只会在初始化的时候执行一次
 const get = createGetter()
 const set = createSetter()
 const readonlyGet = createGetter(true)
+const shallowReadonlyGet = createGetter(true, true)
 
 // 高阶函数封装reactive和readonly中的get函数
-function createGetter(isReadonly = false) {
+function createGetter(isReadonly = false, shallow = false) {
     return function get(target, key) {
-        const res = Reflect.get(target, key)
-
         // 判断是否是reactive或者readonly，返回Boolean
         if (key === ReactiveFlags.IS_REACTIVE) {
             return !isReadonly
         } else if (key === ReactiveFlags.IS_READONLY) {
             return isReadonly
+        }
+
+        const res = Reflect.get(target, key)
+
+        if (shallow) {
+            return res
         }
 
         // 看看res是不是object，嵌套转换reactive
@@ -58,3 +63,7 @@ export const readonlyHandlers = {
         return true
     }
 }
+
+export const shallowReadonlyHandlers = extend({}, readonlyHandlers, {
+    get: shallowReadonlyGet
+})
