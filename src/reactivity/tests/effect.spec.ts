@@ -78,7 +78,9 @@ describe('effect', () => {
         obj.prop = 2
         expect(dummy).toBe(2)
         stop(runner)
-        obj.prop = 3
+        // obj.prop = 3 // 这样的时候stop可以生效
+        obj.prop++ // obj.prop = obj.prop + 1 这时候会再次触发 getter 重新收集依赖，stop失效了
+        // shouldTrack修改代码，增加一个开关，只有在fn中触发getter才会打开开关并收集依赖，收集完成后关闭开关
         expect(dummy).toBe(2)
         // stopped effect should still be manually callable
         runner()
