@@ -7,12 +7,12 @@ class RefImpl {
     private _value: any;
     private _rawValue: any;
     public dep; // ref过来的都是单个值， proxy只针对于对象，所以用{}包裹，使用get和set
+    public __v_isRef = true
 
     constructor(value) {
         this._rawValue = value;
-        this._value = convert(value)
-
         // 1. 看value是否是对象，对象的话用reactive包裹
+        this._value = convert(value)
 
         this.dep = new Set()
     }
@@ -33,12 +33,18 @@ class RefImpl {
         }
     }
 }
-
+/**
+ * 看value是否是对象，对象的话用reactive包裹
+ * @param value 
+ */
 function convert(value) {
     return isObject(value) ? reactive(value) : value;
 }
-
-function trackRefValue(ref) {
+/**
+ * 收集依赖
+ * @param ref 
+ */
+function trackRefValue(ref: RefImpl): void {
     if (isTracking()) {
         trackEffects(ref.dep)
     }
@@ -47,4 +53,18 @@ function trackRefValue(ref) {
 export function ref(value) {
     const res = new RefImpl(value);
     return res;
+}
+/**
+ * 检查某个值是否为 ref
+ * @param ref 
+ */
+export function isRef(ref) {
+    return !!ref.__v_isRef;
+}
+/**
+ * 如果参数是 ref，则返回内部值，否则返回参数本身。这是 val = isRef(val) ? val.value : val 计算的一个语法糖
+ * @param ref 
+ */
+export function unRef(ref) {
+    return isRef(ref) ? ref.value : ref;
 }

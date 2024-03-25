@@ -77,7 +77,7 @@ export function trackEffects(dep) {
     // 可以利用一个全局变量去获取
     if (dep.has(activeEffect)) return
     dep.add(activeEffect)
-    // 在实例中存储dep，(当没有调用effect的时候，activeEffect为undefined，需要加个判断
+    // 在实例中存储dep，(当没有调用effect的时候，activeEffect为undefined，需要在isTracking中加个判断）
     activeEffect.deps.push(dep)
 }
 
@@ -93,7 +93,10 @@ export function trigger(target, key) {
 
     triggerEffects(dep)
 }
-
+/**
+ * 触发依赖更新
+ * @param dep 
+ */
 export function triggerEffects(dep) {
     for (const effect of dep) {
         if (effect.scheduler) {
