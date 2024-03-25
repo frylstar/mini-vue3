@@ -1,6 +1,6 @@
 import { effect } from "../effect";
 import { reactive } from "../reactive";
-import { ref, isRef, unRef } from "../ref";
+import { ref, isRef, unRef, proxyRefs } from "../ref";
 
 describe('ref', () => {
     it("happy path", () => {
@@ -55,5 +55,29 @@ describe('ref', () => {
         const a = ref(1)
         expect(unRef(a)).toBe(1)
         expect(unRef(1)).toBe(1)
+    })
+
+    /**
+     * ref在js里面需要通过.value去取值赋值。但是在模板中不需要。
+     * proxyRefs主要是在setup中的return中对返回结果做了处理。所以我们在模板语法中可以不需要使用.value。
+     */
+    it('proxyRefs', () => {
+        const user = {
+            age: ref(10),
+            name: 'xiaohong'
+        }
+
+        const proxyUser = proxyRefs(user)
+        expect(proxyUser.age).toBe(10)
+        expect(user.age.value).toBe(10)
+        expect(proxyUser.name).toBe('xiaohong')
+
+        proxyUser.age = 20
+        expect(proxyUser.age).toBe(20)
+        expect(user.age.value).toBe(20)
+
+        proxyUser.age = ref(20)
+        expect(proxyUser.age).toBe(20)
+        expect(user.age.value).toBe(20)
     })
 })

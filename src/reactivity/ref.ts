@@ -68,3 +68,27 @@ export function isRef(ref) {
 export function unRef(ref) {
     return isRef(ref) ? ref.value : ref;
 }
+/**
+ * ref在js里面需要通过.value去取值赋值。但是在模板中不需要。
+ * proxyRefs主要是在setup中的return中对返回结果做了处理。所以我们在模板语法中可以不需要使用.value。
+ * @param objectWithRefs 
+ */
+export function proxyRefs(objectWithRefs) {
+    return new Proxy(objectWithRefs, {
+        // get -> 若要获取的属性值为ref，那么返回.value
+        // not ref -> value
+        get(target, key) {
+            return unRef(Reflect.get(target, key))
+        },
+        set(target, key, value) {
+            // set -> ref   .value
+            // 原先的属性值为ref，新值不是ref
+            if (isRef(target[key]) && !isRef(value)) {
+                return (target[key].value = value)
+            } else {
+                // 其他情况就是正常替换就可以
+                return Reflect.set(target, key, value)
+            }
+        }
+    })
+}
