@@ -4,7 +4,19 @@ export const App = {
     // <template></template>
     // render
     render() {
-        return h('div', 'hi ' + this.msg)
+        return h(
+            'div', 
+            {
+                id: 'root',
+                // class: ['red', 'hard']
+                class: 'red hard'
+            }, 
+            // 'hi ' + this.msg
+            [
+                h('p', { class: 'red' }, 'hello'),
+                h('p', { class: 'hard' }, 'mini-vue3')
+            ]
+        )
     },
 
     setup() {
