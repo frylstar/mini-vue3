@@ -14,8 +14,11 @@ function patch(vnode, container) {
 
     // 去处理组件
     // 判断是不是 element
+    // 思考题：如何去区分element还是component类型
+    // 处理component类型
     processComponent(vnode, container);
-
+    // TODO: 处理element类型
+    // processElement();
 }
 
 function processComponent(vnode: any, container: any) {

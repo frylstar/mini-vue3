@@ -24,8 +24,8 @@ function setupStatefulComponent(instance: any) {
     const { setup } = Component;
 
     if (setup) {
-        // 返回 function 是组件的render函数
-        // 返回 object 注入当前组件上下文中
+        // setup返回 function 是组件的render函数
+        // setup返回 object 注入当前组件上下文中
         const setupResult = setup();
 
         handleSetupResult(instance, setupResult)
@@ -44,7 +44,7 @@ function handleSetupResult(instance, setupResult) {
 function finishComponentSetup(instance) {
     const Component = instance.type
 
-    if (!Component.render) {
+    if (Component.render) {
         instance.render = Component.render;
     }
 }
