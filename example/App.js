@@ -1,9 +1,11 @@
 import { h } from '../lib/guide-mini-vue.esm.js'
 
+window.self = null;
 export const App = {
     // <template></template>
     // render
     render() {
+        window.self = this
         return h(
             'div', 
             {
@@ -13,7 +15,7 @@ export const App = {
             }, 
             // 'hi ' + this.msg
             [
-                h('p', { class: 'red' }, 'hello'),
+                h('p', { class: 'red' }, 'hello '+this.msg),
                 h('p', { class: 'hard' }, 'mini-vue3')
             ]
         )

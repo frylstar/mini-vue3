@@ -29,7 +29,7 @@ function processElement(vnode, container) {
 }
 
 function mountElement(vnode, container) {
-    const el = document.createElement(vnode.type)
+    const el = (vnode.el = document.createElement(vnode.type))
     
     console.log('mountElement-vnode: ', vnode)
     // children
@@ -59,18 +59,23 @@ function processComponent(vnode: any, container: any) {
     mountComponent(vnode, container);
 }
 
-function mountComponent(vnode: any, container) {
-    const instance = createComponentInstance(vnode)
+function mountComponent(initialVNode: any, container) {
+    const instance = createComponentInstance(initialVNode)
 
     setupComponent(instance)
-    setupRenderEffect(instance, container)
+    setupRenderEffect(instance, initialVNode, container)
 }
 
-function setupRenderEffect(instance, container) {
+function setupRenderEffect(instance, initialVNode, container) {
     // subTree就是vnode
-    const subTree = instance.render();
+    const { proxy } = instance
+    // 调用h函数->createVNode生成的vnode
+    const subTree = instance.render.call(proxy);
     // vnode -> patch
     // vnode -> element -> mountElement
     patch(subTree, container)
+
+    console.log('subTreee: ', subTree)
+    initialVNode.el = subTree.el
 }
 
