@@ -1,7 +1,7 @@
 import { shallowReadonly } from "../reactivity/reactive";
 import { initProps } from "./componentProps";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
-
+import { emit } from './componentEmit'
 
 export function createComponentInstance(vnode) {
     const component = {
@@ -9,7 +9,10 @@ export function createComponentInstance(vnode) {
         type: vnode.type,
         proxy: null,
         props: {},
+        emit: () => {},
     }
+    // emit.bind(null, component) 会将 null 绑定为函数内部的 this 上下文，同时将 component 绑定为第一个参数，然后返回一个新的函数。当调用这个新的函数时，传入的参数会在 component 参数之后补充。
+    component.emit = emit.bind(null, component) as any
 
     return component;
 }
@@ -36,7 +39,7 @@ function setupStatefulComponent(instance: any) {
         // setup返回 object 注入当前组件上下文中
         // setup中注入props，但是props浅层不可修改，用shallowReadonly
         console.log(instance, '111123')
-        const setupResult = setup(shallowReadonly(instance.props));
+        const setupResult = setup(shallowReadonly(instance.props), { emit: instance.emit });
 
         handleSetupResult(instance, setupResult)
     }

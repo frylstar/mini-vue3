@@ -32,7 +32,14 @@ export const App = {
             [
                 h('div', {}, 'hi, ' + this.msg),
                 h(Foo, {
-                    count: 1
+                    count: 1,
+                    // on + event
+                    onAdd() {
+                        console.log('触发父组件onAdd')
+                    },
+                    onAddFoo(a, b) {
+                        console.log('触发父组件onAddFoo', a, b)
+                    }
                 })
             ]
         )
