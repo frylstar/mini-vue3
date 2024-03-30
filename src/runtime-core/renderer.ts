@@ -21,6 +21,8 @@ function patch(vnode, container) {
     } else if (vnode.shapeFlag & ShapeFlags.COMPONENT) {
         // 处理component类型，判断vnode.type是否是object
         processComponent(vnode, container);
+    } else {
+        console.log('patch中该vnode没有匹配到ShapeFlags: ', vnode)
     }
 }
 
@@ -31,7 +33,7 @@ function processElement(vnode, container) {
 function mountElement(vnode, container) {
     const el = (vnode.el = document.createElement(vnode.type))
     
-    console.log('mountElement-vnode: ', vnode)
+    console.log('mountElement -> vnode: ', vnode)
     // children
     const { children, shapeFlag } = vnode
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {

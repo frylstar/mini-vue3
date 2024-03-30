@@ -1,6 +1,7 @@
 import { ShapeFlags } from "../shared/ShapeFlags"
 
 export function createVNode(type, props?, children?) {
+    console.log(type, '??????', children)
     const vnode = {
         type,
         props,
@@ -13,6 +14,13 @@ export function createVNode(type, props?, children?) {
         vnode.shapeFlag |= ShapeFlags.TEXT_CHILDREN;
     } else if (Array.isArray(children)) {
         vnode.shapeFlag |= ShapeFlags.ARRAY_CHILDREN;
+    }
+
+    // 组件 + children object
+    if (vnode.shapeFlag & ShapeFlags.COMPONENT) {
+        if (typeof children === 'object') {
+            vnode.shapeFlag |= ShapeFlags.SLOT_CHILDREN
+        }
     }
 
     return vnode;
