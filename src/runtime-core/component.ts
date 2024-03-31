@@ -4,13 +4,16 @@ import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
 import { emit } from './componentEmit'
 import { initSlots } from './componentSlots'
 
-export function createComponentInstance(vnode) {
+export function createComponentInstance(vnode, parent) {
     const component = {
         vnode,
         type: vnode.type,
+        setupState: {},
         proxy: null,
         props: {},
         slots: {},
+        provides: parent ? parent.provides : {}, // 全是引用，最后都是同一个
+        parent,
         emit: () => {},
     }
     // emit.bind(null, component) 会将 null 绑定为函数内部的 this 上下文，同时将 component 绑定为第一个参数，然后返回一个新的函数。当调用这个新的函数时，传入的参数会在 component 参数之后补充。
