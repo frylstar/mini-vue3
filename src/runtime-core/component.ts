@@ -37,10 +37,12 @@ function setupStatefulComponent(instance: any) {
     const { setup } = Component;
 
     if (setup) {
+        setCurrentInstance(instance);
         // setup返回 function 是组件的render函数
         // setup返回 object 注入当前组件上下文中
         // setup中注入props，但是props浅层不可修改，用shallowReadonly
         const setupResult = setup(shallowReadonly(instance.props), { emit: instance.emit });
+        setCurrentInstance(null)
 
         handleSetupResult(instance, setupResult)
     }
@@ -62,4 +64,13 @@ function finishComponentSetup(instance) {
     if (Component.render) {
         instance.render = Component.render;
     }
+}
+
+let currentInstance = null;
+export function getCurrentInstance() {
+    return currentInstance;
+}
+
+function setCurrentInstance(instance) {
+    currentInstance = instance
 }
