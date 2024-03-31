@@ -1,4 +1,4 @@
-import { createVNode } from "../vnode";
+import { createVNode, Fragment } from "../vnode";
 
 /**
  * 将 slots 转化为 VNode
@@ -11,7 +11,7 @@ export function renderSlots(slots, name, props) {
     const slot = slots[name]
     if (slot) {
         if (typeof slot === 'function') {
-            return createVNode('div', {}, slot(props))
+            return createVNode(Fragment, {}, slot(props))
         }
     }
 }

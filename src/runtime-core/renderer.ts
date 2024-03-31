@@ -1,5 +1,6 @@
 import { ShapeFlags } from "../shared/ShapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
+import { Fragment, Text } from "./vnode";
 
 export function render(vnode, container) {
     // patch
@@ -13,17 +14,41 @@ export function render(vnode, container) {
  */
 function patch(vnode, container) {
 
-    // 思考题：如何去区分element还是component类型
-    console.log('patch -> vnode.type: ', vnode.type)
-    if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
-         // 处理element类型，例如vnode.type = 'div'
-         processElement(vnode, container);
-    } else if (vnode.shapeFlag & ShapeFlags.COMPONENT) {
-        // 处理component类型，判断vnode.type是否是object
-        processComponent(vnode, container);
-    } else {
-        console.log('patch中该vnode没有匹配到ShapeFlags: ', vnode)
+    const { type } = vnode;
+    switch(type) {
+        case Fragment:
+            // Fragment -> 只渲染children
+            processFragment(vnode, container);
+            break;
+        case Text:
+            // 渲染文本节点
+            processText(vnode, container);
+            break;
+        default:
+            // 思考题：如何去区分element还是component类型
+            console.log('patch -> vnode.type: ', vnode.type)
+            if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
+                // 处理element类型，例如vnode.type = 'div'
+                processElement(vnode, container);
+            } else if (vnode.shapeFlag & ShapeFlags.COMPONENT) {
+                // 处理component类型，判断vnode.type是否是object
+                processComponent(vnode, container);
+            } else {
+                console.log('patch中该vnode没有匹配到ShapeFlags: ', vnode)
+            }
+            break;
     }
+}
+
+function processFragment(vnode, container) {
+    mountChildren(vnode, container);
+}
+
+function processText(vnode, container) {
+    const { children } = vnode;
+    const textNode = (vnode.el = document.createTextNode(children));
+
+    container.append(textNode);
 }
 
 function processElement(vnode, container) {
