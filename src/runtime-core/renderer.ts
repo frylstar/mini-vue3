@@ -1,4 +1,6 @@
 import { effect } from "../reactivity/effect";
+import { patchProp } from "../runtime-dom";
+import { EMPTY_OBJ } from "../shared";
 import { ShapeFlags } from "../shared/ShapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
 import { createAppAPI } from "./createApp";
@@ -75,6 +77,38 @@ export function createRenderer(options) {
         console.log('n1', n1)
         console.log('n2', n2)
         // TODO: 更新对比 props children
+        const oldProps = n1.props || EMPTY_OBJ;
+        const newProps = n2.props || EMPTY_OBJ;
+        // 此时n2上是没有el的，需要添加上
+        const el = n2.el = n1.el;
+
+        patchProps(el, oldProps, newProps)
+    }
+
+    // props对比更新
+    function patchProps(el, oldProps, newProps) {
+        if (oldProps !== newProps) {
+            // 值新增修改 或者 值变为undefined/null
+            for (const key in newProps) {
+                const prevVal = oldProps[key];
+                const nextVal = newProps[key];
+
+                if (prevVal !== nextVal) {
+                    patchProp(el, key, prevVal, nextVal)
+                }
+            }
+            
+            // 优化点: 旧props是空对象的话，无需以下遍历对比了
+            if (oldProps !== EMPTY_OBJ) {
+                // 旧key去除：旧的props中的key不存在于新的props中，需要遍历旧props
+                for (const key in oldProps) {
+                    // 旧key不存在于新props中
+                    if (!(key in newProps)) {
+                        patchProp(el, key, oldProps[key], null)
+                    }
+                }
+            }
+        }
     }
 
 
@@ -93,7 +127,7 @@ export function createRenderer(options) {
         const { props } = vnode;
         for (const key in props) {
             const val = props[key];
-            hostPatchProp(el, key, val);
+            hostPatchProp(el, key, null, val);
         }
 
         hostInsert(el, container);
