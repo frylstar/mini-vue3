@@ -3,6 +3,7 @@ import { initProps } from "./componentProps";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
 import { emit } from './componentEmit'
 import { initSlots } from './componentSlots'
+import { proxyRefs } from "../reactivity";
 
 export function createComponentInstance(vnode, parent) {
     const component = {
@@ -15,6 +16,7 @@ export function createComponentInstance(vnode, parent) {
         provides: parent ? parent.provides : {}, // 全是引用，最后都是同一个
         parent,
         emit: () => {},
+        isMounted: false,
     }
     // emit.bind(null, component) 会将 null 绑定为函数内部的 this 上下文，同时将 component 绑定为第一个参数，然后返回一个新的函数。当调用这个新的函数时，传入的参数会在 component 参数之后补充。
     component.emit = emit.bind(null, component) as any
@@ -54,8 +56,8 @@ function setupStatefulComponent(instance: any) {
 function handleSetupResult(instance, setupResult) {
 
     if (typeof setupResult === 'object') {
-        // render函数中的ctx上下文
-        instance.setupState = setupResult;
+        // render函数中的ctx上下文，proxyRefs处理在模版中使用ref不需要.value
+        instance.setupState = proxyRefs(setupResult);
     }
 
     finishComponentSetup(instance);
