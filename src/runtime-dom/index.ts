@@ -19,8 +19,10 @@ export function patchProp(el, key, prevVal, nextVal) {
     }
 }
 
-export function insert(el, parent) {
-    parent.append(el)
+export function insert(el, parent, anchor) {
+    // parent.append(el)
+    console.log(anchor, 1111)
+    parent.insertBefore(el, anchor || null)
 }
 
 export function remove(child) {
