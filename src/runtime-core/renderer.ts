@@ -191,7 +191,51 @@ export function createRenderer(options) {
         }
         // 中间对比，获取中间区域指针范围
         if (i <= e1 && i <= e2) {
+            debugger
+            let s1 = i;
+            let s2 = i;
             // TODO: 乱序部分，更复杂的对比
+            const toBePatched = e2 - s2 + 1; // next中间区域总数量
+            let patched = 0;
+            const keyToNewIndexMap = new Map();
+
+            for (let i = s2; i <= e2; i++) {
+                const nextChild = c2[i];
+                // 将新的对比区域key: index存入Map中，复杂度由O(n)变为O(1)
+                keyToNewIndexMap.set(nextChild.key, i)
+            }
+
+            for(let i = s1; i <= e1; i++) {
+                const prevChild = c1[i];
+                const prevKey = prevChild.key;
+
+                // 中间部分，老的比新的多， 那么多出来的直接就可以被干掉(优化删除逻辑)
+                if (patched >= toBePatched) {
+                    hostRemove(prevChild.el);
+                    continue;
+                }
+
+                // 若没有设置key，则为null或undefined，需要for循环遍历查找
+                let newIndex;
+                if (prevKey != null) {
+                    newIndex = keyToNewIndexMap.get(prevKey);
+                } else {
+                    for(let j = s2; j <= e2; j++) {
+                        if (isSameNode(prevChild, c2[j])) {
+                            newIndex = j;
+                        }
+                    }
+                }
+
+                // 找到相同节点（newIndex不为undefined），进行patch，否则删除当前旧节点
+                if (newIndex === undefined) {
+                    hostRemove(prevChild.el);
+                } else {
+                    patch(prevChild, c2[newIndex], container, parentComponent, null);
+                    patched++;
+                }
+
+            }
         }
     }
 
