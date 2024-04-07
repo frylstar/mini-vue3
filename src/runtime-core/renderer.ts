@@ -3,6 +3,7 @@ import { patchProp } from "../runtime-dom";
 import { EMPTY_OBJ } from "../shared";
 import { ShapeFlags } from "../shared/ShapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
+import { shouldUpdateComponent } from "./componentUpdateUtils";
 import { createAppAPI } from "./createApp";
 import { Fragment, Text } from "./vnode";
 
@@ -346,18 +347,48 @@ export function createRenderer(options) {
     }
 
     function processComponent(n1, n2: any, container: any, parentComponent, anchor) {
-        mountComponent(n2, container, parentComponent, anchor);
+        if (!n1) {
+            mountComponent(n2, container, parentComponent, anchor);
+        } else {
+            updateComponent(n1, n2)
+        }
+    }
+
+    function updateComponent(n1, n2) {
+        console.log("更新组件", n1, n2);
+        // 更新组件实例引用
+        const instance = n2.component = n1.component;
+        // 先看看这个组件是否应该更新
+        if (shouldUpdateComponent(n1, n2)) {
+            console.log(`组件需要更新: ${instance}`);
+            // 那么 next 就是新的 vnode 了（也就是 n2）
+            instance.next = n2;
+            // 这里的 update 是在 setupRenderEffect 里面初始化的，update 函数除了当内部的响应式对象发生改变的时候会调用
+            // 还可以直接主动的调用(这是属于 effect 的特性)
+            // 调用 update 再次更新调用 patch 逻辑
+            // 在update 中调用的 next 就变成了 n2了
+            // ps：可以详细的看看 update 中 next 的应用
+            // TODO 需要在 update 中处理支持 next 的逻辑
+            instance.update();
+        } else {
+            console.log(`组件不需要更新: ${instance}`);
+            // 不需要更新的话，那么只需要覆盖下面的属性即可
+            n2.component = n1.component;
+            n2.el = n1.el;
+            instance.vnode = n2;
+        }
+
     }
 
     function mountComponent(initialVNode: any, container, parentComponent, anchor) {
-        const instance = createComponentInstance(initialVNode, parentComponent);
+        const instance = initialVNode.component = createComponentInstance(initialVNode, parentComponent);
 
         setupComponent(instance);
         setupRenderEffect(instance, initialVNode, container, anchor);
     }
 
     function setupRenderEffect(instance, initialVNode, container, anchor) {
-        effect(() => {
+        instance.update = effect(() => {
             if (!instance.isMounted) {
                 // 初始化
                 console.log('init')
@@ -374,6 +405,12 @@ export function createRenderer(options) {
             } else {
                 // 更新
                 console.log('update')
+                // 需要一个vnode
+                const { next, vnode } = instance
+                if (next) {
+                    next.el = vnode.el;
+                    updateComponentPreRender(instance, next)
+                }
                 // subTree就是vnode
                 const { proxy } = instance;
                 // 调用h函数->createVNode生成的vnode
@@ -393,6 +430,13 @@ export function createRenderer(options) {
         // 用高阶函数将render方法传入createApp
         createApp: createAppAPI(render),
     };
+}
+
+function updateComponentPreRender(instance, nextVNode) {
+    instance.vnode = nextVNode;
+    instance.next = null;
+
+    instance.props = nextVNode.props;
 }
 
 function getSequence(arr: number[]): number[] {

@@ -9,6 +9,7 @@ export function createComponentInstance(vnode, parent) {
     const component = {
         vnode,
         type: vnode.type,
+        next: null, // 下次要更新的vnode(updateComponent使用)
         setupState: {},
         proxy: null,
         props: {},

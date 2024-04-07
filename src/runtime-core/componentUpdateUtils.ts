@@ -1,0 +1,12 @@
+// 判断组件props是否更新
+export function shouldUpdateComponent(prevVNode, nextVNode) {
+    const { props: prevProps } = prevVNode;
+    const { props: nextProps } = nextVNode;
+
+    for (const key in nextProps) {
+        if (nextProps[key] !== prevProps) {
+            return true;
+        }
+        return false;
+    }
+}
