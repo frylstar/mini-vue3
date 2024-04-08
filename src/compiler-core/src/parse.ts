@@ -2,7 +2,7 @@ import { NodeTypes } from "./ast";
 
 const enum TagType {
     Start,
-    End
+    End,
 }
 
 // 解析插值
@@ -25,9 +25,31 @@ function parseChildren(context) {
         }
     }
 
+    if (!node) {
+        node = parseText(context);
+    }
+
     nodes.push(node);
 
     return nodes;
+}
+
+function parseText(context) {
+    // 1. 获取content
+    const content = parseTextData(context, context.source.length);
+
+    return {
+        type: NodeTypes.TEXT,
+        content,
+    };
+}
+
+function parseTextData(context: any, length) {
+    const content = context.source.slice(0, length);
+
+    // 2. 推进
+    advanceBy(context, length);
+    return content;
 }
 
 function parseElement(context) {
@@ -36,7 +58,7 @@ function parseElement(context) {
 
     parseTag(context, TagType.End);
 
-    console.log('------------', context);
+    console.log("------------", context);
 
     return element;
 }
@@ -76,14 +98,14 @@ function parseInterpolation(context) {
     // 获取插值的长度
     const rawContentLength = closeIndex - openDelimiter.length;
 
-    const rawContent = context.source.slice(0, rawContentLength);
+    const rawContent = parseTextData(context, rawContentLength);
     const content = rawContent.trim(); // 去除空格
 
     console.log("content:", content);
 
     // 清空已处理的，继续推进
-    // context.source = context.source.slice(rawContentLength + closeDelimiter.length)
-    advanceBy(context, rawContentLength + closeDelimiter.length);
+    // context.source = context.source.slice(closeDelimiter.length)
+    advanceBy(context, closeDelimiter.length);
 
     console.log("context.source:", context.source);
 
