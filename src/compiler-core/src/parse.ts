@@ -87,7 +87,7 @@ function parseElement(context, ancestors) {
 
     ancestors.push(element);
 
-    element.children = parseChildren(context, ancestors);
+    const children = parseChildren(context, ancestors);
 
     ancestors.pop();
 
@@ -97,6 +97,7 @@ function parseElement(context, ancestors) {
         throw new Error(`缺少结束标签：${element.tag}`)
     }
 
+    element.children = children;
     console.log("parseElement之后: ", context);
 
     return element;
@@ -169,7 +170,8 @@ function advanceBy(context: any, length: number) {
 function createRoot(children) {
     return {
         children,
-        type: NodeTypes.ROOT
+        type: NodeTypes.ROOT,
+        helpers: [],
     };
 }
 
