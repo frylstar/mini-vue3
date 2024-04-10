@@ -65,7 +65,18 @@ function handleSetupResult(instance, setupResult) {
 }
 
 function finishComponentSetup(instance) {
+    // 给 instance 设置 render
+
+    // 先取到用户设置的 component options
     const Component = instance.type
+
+    // 如果 compile 有值 并且当组件没有 render 函数，那么就需要把 template 编译成 render 函数
+    if (compiler && !Component.render) {
+        if (Component.template) {
+            // 这里就是 runtime 模块和 compile 模块结合点
+            Component.render = compiler(Component.template);
+        }
+    }
 
     if (Component.render) {
         instance.render = Component.render;
@@ -73,10 +84,16 @@ function finishComponentSetup(instance) {
 }
 
 let currentInstance = null;
+// 这个接口暴露给用户，用户可以在 setup 中获取组件实例 instance
 export function getCurrentInstance() {
     return currentInstance;
 }
 
 function setCurrentInstance(instance) {
     currentInstance = instance
+}
+
+let compiler;
+export function registerRuntimeCompiler(_compiler) {
+    compiler = _compiler;
 }

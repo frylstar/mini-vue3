@@ -396,7 +396,8 @@ export function createRenderer(options) {
                 // subTree就是vnode
                 const { proxy } = instance;
                 // 调用h函数->createVNode生成的vnode，记录subTree,用于下一次patch对比更新
-                const subTree = instance.subTree = instance.render.call(proxy);
+                // 第二个proxy作为参数传入，用于template转render函数时的_ctx
+                const subTree = instance.subTree = instance.render.call(proxy, proxy);
                 // vnode -> patch
                 // vnode -> element -> mountElement
                 patch(null, subTree, container, instance, anchor);
@@ -415,7 +416,7 @@ export function createRenderer(options) {
                 // subTree就是vnode
                 const { proxy } = instance;
                 // 调用h函数->createVNode生成的vnode
-                const subTree = instance.render.call(proxy);
+                const subTree = instance.render.call(proxy, proxy);
                 const prevSubTree = instance.subTree;
                 // 记录新的subTree
                 instance.subTree = subTree;
